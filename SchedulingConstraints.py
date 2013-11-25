@@ -17,7 +17,7 @@ Is satisfaction is unclear, return True.
 """
 Limits the maximum number of hours taken.
 
-Variables: 0...n
+Variables: 1...n
 Extras:
 	max_hours
 """
@@ -32,9 +32,15 @@ def max_hours_constraint(variables, value_map, extras):
 
 
 """
+Creates unary constraints for min hours. Preferrable to use this instead of creating constraints.
+"""
+def create_min_hours_constraints(min_hours, variables):
+	return [Constraint([variable], min_hours_constraint, min_hours) for variable in variables]
+
+"""
 Limits the minimum number of hours taken.
 
-Variables: 0...n
+Variables: 1...n
 Extras:
 	min_hours
 """
@@ -52,9 +58,15 @@ def min_hours_constraint(variables, value_map, extras):
 
 
 """
+Creates unary constraints for setting an earliest class time. Preferrable to use this instead of creating constraints.
+"""
+def create_day_start_constraints(day_start, variables):
+	return [Constraint([variable], day_start_constraint, day_start) for variable in variables]
+
+"""
 Sets an earliest time for classes in the morning.
 
-Variables: 0...n
+Variables: 1...n
 Extras:
 	day_start
 """
@@ -68,9 +80,15 @@ def day_start_constraint(variables, value_map, extras):
 
 
 """
+Creates unary constraints for setting a latest class time. Preferrable to use this instead of creating constraints.
+"""
+def create_day_end_constraints(day_end, variables):
+	return [Constraint([variable], day_start_constraint, day_end) for variable in variables]
+
+"""
 Sets a latest time for classes in the evening.
 
-Variables: 0...n
+Variables: 1...n
 Extras:
 	day_end
 """
@@ -86,26 +104,21 @@ def day_end_constraint(variables, value_map, extras):
 """
 Requires a class to be taken.
 
-Variables: 0...n
+Variables: 1
 Extras:
-	req_class
+	None
 """
 def needed_class_constraint(variables, value_map, extras):
-	if len(variables) > len(value_map):
-		return True
-
-	req_class = extras[req_class]
-	for variable in (var for var in value_map if value_map[var] is not None):
-		if variable == req_class:
-			return True
-	return False
+	if value_map[variables[0]] is None:
+		return False
+	return True
 
 
 # TODO data incomplete
 """
 Specifies a professor that should not be taken.
 
-Variables: 0...n
+Variables: 1...n
 Extras:
 	bad_professor
 """

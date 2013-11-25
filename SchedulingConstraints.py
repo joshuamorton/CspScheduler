@@ -129,3 +129,21 @@ def professor_constraint(variables, value_map, extras):
 			return False
 	return True
 
+
+"""
+Specifies that another class must be in 
+
+Variables: 1
+Extras:
+	classes_taken
+	prereq
+"""
+def class_prereq_constraint(variables, value_map, extras):
+	if value_map[variables[0]] is None:
+		return True
+
+	classes_taken = extras[classes_taken]
+	prereq = extras[prereq]
+	if prereq in classes_taken:
+		return True
+		return False

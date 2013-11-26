@@ -60,8 +60,8 @@ def min_hours_constraint(variables, value_map, extras):
 """
 Creates unary constraints for setting an earliest class time. Preferrable to use this instead of creating constraints.
 """
-def create_day_start_constraints(day_start, variables):
-	return [Constraint([variable], day_start_constraint, day_start) for variable in variables]
+def create_day_start_constraints(start_time, variables):
+	return [Constraint([variable], day_start_constraint, day_start=start_time) for variable in variables]
 
 """
 Sets an earliest time for classes in the morning.
@@ -82,8 +82,8 @@ def day_start_constraint(variables, value_map, extras):
 """
 Creates unary constraints for setting a latest class time. Preferrable to use this instead of creating constraints.
 """
-def create_day_end_constraints(day_end, variables):
-	return [Constraint([variable], day_start_constraint, day_end) for variable in variables]
+def create_day_end_constraints(end_time, variables):
+	return [Constraint([variable], day_start_constraint, day_end=end_time) for variable in variables]
 
 """
 Sets a latest time for classes in the evening.
@@ -129,6 +129,14 @@ def professor_constraint(variables, value_map, extras):
 			return False
 	return True
 
+
+"""
+Creates prereq constraints for each variable that has a prerequisite. Requirements should be expressed
+in prereqs as a dictionary from the course to its prerequisite.
+"""
+def create_class_prereq_constraints(variables, prereqs, classes):
+	return [Constraint([variable], class_prereq_constraint, classes_taken=classes, prereq=prereqs[variable])
+			for variable in (var for var in variables if var in prereqs)]
 
 """
 Specifies that another class must be in 

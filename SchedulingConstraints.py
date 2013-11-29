@@ -1,6 +1,10 @@
 # Currently assuming that deciding not to take a class is equivalent to a value of None
 # Also assuming variables are classes and values are sections
 
+# Attributes of class: professor, credits
+# Attributes of section: meetings
+# Attributes of meetings: start_time, end_time
+
 # Unavailable:
 # Professors
 # List of courses taken (transcript)
@@ -29,13 +33,6 @@ def max_hours_constraint(variables, value_map, extras):
 		if hours > max_hours:
 			return False
 	return True
-
-
-"""
-Creates unary constraints for min hours. Preferrable to use this instead of creating constraints.
-"""
-def create_min_hours_constraints(min_hours, variables):
-	return [Constraint([variable], min_hours_constraint, min_hours) for variable in variables]
 
 """
 Limits the minimum number of hours taken.
@@ -73,7 +70,7 @@ Extras:
 def day_start_constraint(variables, value_map, extras):
 	day_start = extras[day_start]
 	for variable in (var for var in value_map if value_map[var] is not None):
-		for meeting in value_map.meetings:
+		for meeting in value_map[variable].meetings:
 			if meeting.start_time < day_start:
 				return False
 	return True
@@ -95,7 +92,7 @@ Extras:
 def day_end_constraint(variables, value_map, extras):
 	day_end = extras[day_end]
 	for variable in (var for var in value_map if value_map[var] is not None):
-		for meeting in value_map.meetings:
+		for meeting in value_map[variable].meetings:
 			if meeting.end_time > day_end:
 				return False
 	return True
@@ -139,7 +136,7 @@ def create_class_prereq_constraints(variables, prereqs, classes):
 			for variable in (var for var in variables if var in prereqs)]
 
 """
-Specifies that another class must be in 
+Specifies that another class must be taken.
 
 Variables: 1
 Extras:
@@ -154,4 +151,4 @@ def class_prereq_constraint(variables, value_map, extras):
 	prereq = extras[prereq]
 	if prereq in classes_taken:
 		return True
-		return False
+	return False

@@ -38,16 +38,16 @@ class Constraint:
 
 
 """
-	Class to represent a variable. Has an identifier, value, relevant constraints, conlfict set, and a domain.
+	Class to represent a variable. Has data, value, relevant constraints, conlfict set, and a domain.
 """
 class Variable:
 	"""
 	Args:
-		identifier (?): an identifier for this variable
+		data (?): the data for this variable
 		domain (set<?>): a set of values that this variable can be assigned
 	"""
-	def __init__(self, identifier, domain):
-		self.identifier = identifier
+	def __init__(self, data, domain):
+		self.data = data
 		self.domain = domain
 		self.constraints = []
 		self.conflict_set = set([])
@@ -80,10 +80,10 @@ class Variable:
 		self.assigned = False
 
 	def __str__(self):
-		return str(self.identifier)
+		return str(self.data)
 
 	def __repr__(self):
-		return str(self.identifier)
+		return str(self.data)
 
 
 class ConstraintSatisfactionProblem:
@@ -103,7 +103,7 @@ class ConstraintSatisfactionProblem:
 	def generate_assignment(self):
 		solution = {}
 		for variable in self.variables:
-			solution[variable.identifier] = variable.value
+			solution[variable.data] = variable.value
 		return solution
 
 	def is_complete(self):

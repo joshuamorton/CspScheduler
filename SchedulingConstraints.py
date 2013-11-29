@@ -2,7 +2,7 @@
 # Also assuming variables are classes and values are sections
 
 # Attributes of class: professor, credits
-# Attributes of section: meetings
+# Attributes of section: meetings, monday...
 # Attributes of meetings: start_time, end_time
 
 # Unavailable:
@@ -18,6 +18,45 @@ Is satisfaction is unclear, return True.
 """
 
 
+
+"""
+Creates binary constraints for ensuring classes do not overlap.
+This should be used for any scheduler.
+"""
+def create_no_overlap_constraints(variables):
+	constraints = []
+	for var1 in variables:
+		for var2 in (var for var in variables if var != var1):
+			constraints.append(Constraint([var1, var2], no_overlap_constraint))
+	return constraints
+
+"""
+Tests if two sections overlap.
+
+Variables: 2
+Extras:
+	None
+"""
+def no_overlap_constraint(variables, value_map, extras):
+	section1 = value_map[variables[0]]
+	section2 = value_map[variables[1]]
+
+	for meeting1 in section1['meetings']:
+		for meeting2 in section2['meetings']:
+			day_overlap = False
+			for day in (day for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] if meeting1[day] and meeting2[day]):
+				day_overlap = True
+			if day_overlap:
+				start1 = time.strptime(meeting1['start_time'], '2000-01-01T%H:%M:%SZ')
+				start2 = time.strptime(meeting2['start_time'], '2000-01-01T%H:%M:%SZ')
+				end1 = time.strptime(meeting1['end_time'], '2000-01-01T%H:%M:%SZ')
+				end2 = time.strptime(meeting2['end_time'], '2000-01-01T%H:%M:%SZ')
+
+				if (start1 > start2 and start1 < end2) or (start2 > start1 and start2 < end1):
+					return False
+	return True
+
+
 """
 Limits the maximum number of hours taken.
 
@@ -26,13 +65,14 @@ Extras:
 	max_hours
 """
 def max_hours_constraint(variables, value_map, extras):
-	max_hours = extras[max_hours]
+	max_hours = extras['max_hours']
 	hours = 0
 	for variable in (var for var in value_map if value_map[var] is not None):
-		hours += variable.credits
+		hours += variable['credits']
 		if hours > max_hours:
 			return False
 	return True
+
 
 """
 Limits the minimum number of hours taken.
@@ -45,10 +85,10 @@ def min_hours_constraint(variables, value_map, extras):
 	if len(variables) > len(value_map):
 		return True
 
-	min_hours = extras[min_hours]
+	min_hours = extras['min_hours']
 	hours = 0
 	for variable in (var for var in value_map if value_map[var] is not None):
-		hours += variable.credits
+		hours += variable['credits']
 		if hours > min_hours:
 			return True
 	return False
@@ -68,10 +108,10 @@ Extras:
 	day_start
 """
 def day_start_constraint(variables, value_map, extras):
-	day_start = extras[day_start]
+	day_start = time.strptime(extras['day_start'], '2000-01-01T%H:%M:%SZ')
 	for variable in (var for var in value_map if value_map[var] is not None):
-		for meeting in value_map[variable].meetings:
-			if meeting.start_time < day_start:
+		for meeting in value_map[variable]['meetings']:
+			if time.strptime(meeting['start_time'], '2000-01-01T%H:%M:%SZ') < day_start:
 				return False
 	return True
 
@@ -90,10 +130,10 @@ Extras:
 	day_end
 """
 def day_end_constraint(variables, value_map, extras):
-	day_end = extras[day_end]
+	day_end = time.strptime(extras['day_end'], '2000-01-01T%H:%M:%SZ')
 	for variable in (var for var in value_map if value_map[var] is not None):
-		for meeting in value_map[variable].meetings:
-			if meeting.end_time > day_end:
+		for meeting in value_map[variable]['meetings']:
+			if time.strptime(meeting['end_time'], '2000-01-01T%H:%M:%SZ') > day_end:
 				return False
 	return True
 
@@ -120,9 +160,9 @@ Extras:
 	bad_professor
 """
 def professor_constraint(variables, value_map, extras):
-	bad_professor = extras[bad_professor]
+	bad_professor = extras['bad_professor']
 	for variable in (var for var in value_map if value_map[var] is not None):
-		if variable.professor == bad_professor:
+		if variable['professor'] == bad_professor:
 			return False
 	return True
 
@@ -147,8 +187,8 @@ def class_prereq_constraint(variables, value_map, extras):
 	if value_map[variables[0]] is None:
 		return True
 
-	classes_taken = extras[classes_taken]
-	prereq = extras[prereq]
+	classes_taken = extras['classes_taken']
+	prereq = extras['prereq']
 	if prereq in classes_taken:
 		return True
 	return False

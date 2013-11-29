@@ -1,4 +1,4 @@
-# TODO data collection and attribute validation (see Schedulingconstraints.py)
+# TODO data collection
 # TODO throw exceptions if wrong number of variables (in Schedulingconstraints.py)
 # TODO throw exception if course required but not in courses requested?
 # TODO change class name creation in create_class_needed_constraints to match actual attributes
@@ -12,10 +12,15 @@ from SchedulingConstraints import *
 Creates and returns a schedule with the specified parameters or None if no schedule exists.
 
 Arguments:
-	classes_considered (List<String>) names of classes that can be put into this schedule
+	classes_considered (List<string>) names of classes that can be put into this schedule
 	parameters (dict<string, ?>) mapping of constraint types to values for those constraints
 		Options - max_hours, min_hours, day_start, day_end, classes_needed
 	class_variables (List<Variable>) override for getting classes from web, testing purposes
+
+Option Details:
+	max_hours, min_hours (int) number of hours, inclusive
+	day_start, day_end (string) should be in the format '2000-01-01T%H:%M:%SZ') to match course info
+	classes_needed (List<string>) each class should be in the format '[school] [number]', ex. 'CS 1332'
 """
 def create_schedule(classes_considered, parameters, class_variables = None):
 	variables = []
@@ -42,6 +47,8 @@ def create_schedule(classes_considered, parameters, class_variables = None):
 		if ptype == "classes_needed":
 			for constraint in create_class_needed_constraints(variables, parameters[ptype):
 				constraints.append(constraint)
+	for constraint in create_no_overlap_constraints(variables):
+		constraints.append(constraint)
 
 	problem = ConstraintSatisfactionProblem(variables, constraints)
 	return problem.solve()

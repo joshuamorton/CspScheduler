@@ -1,9 +1,5 @@
-# TODO data collection
 # TODO throw exceptions if wrong number of variables (in Schedulingconstraints.py)
 # TODO throw exception if course required but not in courses requested?
-# TODO change class name creation in create_class_needed_constraints to match actual attributes
-# TODO actually get classes and sections through web
-# TODO determine if class names are really the best representation for classes_considered
 
 from ConstraintSolver import *
 from SchedulingConstraints import *
@@ -30,16 +26,19 @@ def create_schedule(classes_considered, parameters, class_variables = None):
 		# Define variables through web
 		for class_name in (name.split(' ') for name in classes_considered):
 			class_info = json.load(urllib2.urlopen('course.us.to/%s/%s.json' % (class_name[0], class_name[1])))
+			# Doesn't store school properly in json, fix
+			class_info['school'] = class_name[0]
 			sections = set([])
 			for section_name in (section['name'] for section in class_info['sections']):
 				sections.add(json.load(urllib2.urlopen('course.us.to/%s/%s/%s.json' % (class_name[0], class_name[1], section_name))))
+			sections.append(None)
 			variables.append(Variable(class_info, sections))
 	else:
 		# Use for testing
 		variables = class_variables
 
 	constraints = []
-	for ptype in paramaters:
+	for ptype in parameters:
 		if ptype == 'max_hours':
 			constraints.append(Constraint(variables, max_hours_constraint, max_hours=parameters[ptype]))
 		if ptype == 'min_hours':
@@ -51,7 +50,7 @@ def create_schedule(classes_considered, parameters, class_variables = None):
 			for constraint in create_day_end_constraints(parameters[ptype], variables):
 				constraints.append(constraint)
 		if ptype == 'classes_needed':
-			for constraint in create_class_needed_constraints(variables, parameters[ptype):
+			for constraint in create_class_needed_constraints(variables, parameters[ptype]):
 				constraints.append(constraint)
 	for constraint in create_no_overlap_constraints(variables):
 		constraints.append(constraint)

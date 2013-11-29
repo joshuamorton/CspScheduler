@@ -2,8 +2,8 @@
 # Also assuming variables are classes and values are sections
 
 # Attributes of class: professor, credits
-# Attributes of section: meetings, monday...
-# Attributes of meetings: start_time, end_time
+# Attributes of section: meetings
+# Attributes of meetings: start_time, end_time, monday...
 
 # Unavailable:
 # Professors
@@ -67,7 +67,7 @@ def max_hours_constraint(variables, value_map, extras):
 	max_hours = extras['max_hours']
 	hours = 0
 	for variable in (var for var in value_map if value_map[var] is not None):
-		hours += variable['credits']
+		hours += variable.data['credits']
 		if hours > max_hours:
 			return False
 	return True
@@ -87,7 +87,7 @@ def min_hours_constraint(variables, value_map, extras):
 	min_hours = extras['min_hours']
 	hours = 0
 	for variable in (var for var in value_map if value_map[var] is not None):
-		hours += variable['credits']
+		hours += variable.data['credits']
 		if hours > min_hours:
 			return True
 	return False

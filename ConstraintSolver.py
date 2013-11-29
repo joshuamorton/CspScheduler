@@ -44,7 +44,7 @@ class Variable:
 	"""
 	Args:
 		data (?): the data for this variable
-		domain (set<?>): a set of values that this variable can be assigned
+		domain (list<?>): a list of values that this variable can be assigned
 	"""
 	def __init__(self, data, domain):
 		self.data = data
@@ -103,7 +103,7 @@ class ConstraintSatisfactionProblem:
 	def generate_assignment(self):
 		solution = {}
 		for variable in self.variables:
-			solution[variable.data] = variable.value
+			solution[variable] = variable.value
 		return solution
 
 	def is_complete(self):

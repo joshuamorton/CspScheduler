@@ -7,6 +7,8 @@
 
 from ConstraintSolver import *
 from SchedulingConstraints import *
+import urllib2
+import json
 
 """
 Creates and returns a schedule with the specified parameters or None if no schedule exists.
@@ -26,25 +28,29 @@ def create_schedule(classes_considered, parameters, class_variables = None):
 	variables = []
 	if class_variables is None:
 		# Define variables through web
-		for class_name in classes_considered:
-			sections = []
-			variables.append(Variable(class_name, sections))
+		for class_name in (name.split(' ') for name in classes_considered):
+			class_info = json.load(urllib2.urlopen('course.us.to/%s/%s.json' % (class_name[0], class_name[1])))
+			sections = set([])
+			for section_name in (section['name'] for section in class_info['sections']):
+				sections.add(json.load(urllib2.urlopen('course.us.to/%s/%s/%s.json' % (class_name[0], class_name[1], section_name))))
+			variables.append(Variable(class_info, sections))
 	else:
+		# Use for testing
 		variables = class_variables
 
 	constraints = []
 	for ptype in paramaters:
-		if ptype == "max_hours":
-			constraints.append(Constraint(variables, max_hours_constraint, "max_hours"=parameters[ptype]))
-		if ptype == "min_hours":
-			constraints.append(Constraint(variables, min_hours_constraint, "min_hours"=parameters[ptype]))
-		if ptype == "day_start":
+		if ptype == 'max_hours':
+			constraints.append(Constraint(variables, max_hours_constraint, max_hours=parameters[ptype]))
+		if ptype == 'min_hours':
+			constraints.append(Constraint(variables, min_hours_constraint, min_hours=parameters[ptype]))
+		if ptype == 'day_start':
 			for constraint in create_day_start_constraints(parameters[ptype], variables):
 				constraints.append(constraint)
-		if ptype == "day_end":
+		if ptype == 'day_end':
 			for constraint in create_day_end_constraints(parameters[ptype], variables):
 				constraints.append(constraint)
-		if ptype == "classes_needed":
+		if ptype == 'classes_needed':
 			for constraint in create_class_needed_constraints(variables, parameters[ptype):
 				constraints.append(constraint)
 	for constraint in create_no_overlap_constraints(variables):
@@ -56,6 +62,6 @@ def create_schedule(classes_considered, parameters, class_variables = None):
 def create_class_needed_constraints(variables, classes_needed):
 	constraints = []
 	for class_name in classes_needed:
-		for variable in (var for var in variables if str(var.school) + " " + str(var.number) == class_name):
+		for variable in (var for var in variables if str(var.school) + ' ' + str(var.number) == class_name):
 			constraints.append(Constraint(variable, needed_class_constraint))
 	return constraints

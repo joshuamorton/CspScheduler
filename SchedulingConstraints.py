@@ -18,7 +18,6 @@ Is satisfaction is unclear, return True.
 """
 
 
-
 """
 Creates binary constraints for ensuring classes do not overlap.
 This should be used for any scheduler.

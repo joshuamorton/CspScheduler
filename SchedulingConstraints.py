@@ -17,6 +17,8 @@ Returns True if satisfied or False otherwise.
 Is satisfaction is unclear, return True.
 """
 
+from ConstraintSolver import Constraint
+import time
 
 """
 Creates binary constraints for ensuring classes do not overlap.
@@ -37,9 +39,15 @@ Extras:
 	None
 """
 def no_overlap_constraint(variables, value_map, extras):
+	if variables[0] not in value_map or variables[1] not in value_map:
+		return True
+
 	section1 = value_map[variables[0]]
 	section2 = value_map[variables[1]]
 
+	if section1 is None or section2 is None:
+		return True
+	
 	for meeting1 in section1['meetings']:
 		for meeting2 in section2['meetings']:
 			day_overlap = False
@@ -51,7 +59,7 @@ def no_overlap_constraint(variables, value_map, extras):
 				end1 = time.strptime(meeting1['end_time'], '2000-01-01T%H:%M:%SZ')
 				end2 = time.strptime(meeting2['end_time'], '2000-01-01T%H:%M:%SZ')
 
-				if (start1 > start2 and start1 < end2) or (start2 > start1 and start2 < end1):
+				if (start1 > start2 and start1 < end2) or (start2 > start1 and start2 < end1) or (start1 == start2) or (end1 == end2):
 					return False
 	return True
 
@@ -67,7 +75,7 @@ def max_hours_constraint(variables, value_map, extras):
 	max_hours = extras['max_hours']
 	hours = 0
 	for variable in (var for var in value_map if value_map[var] is not None):
-		hours += variable.data['credits']
+		hours += float(variable.data['credits'])
 		if hours > max_hours:
 			return False
 	return True
@@ -87,7 +95,7 @@ def min_hours_constraint(variables, value_map, extras):
 	min_hours = extras['min_hours']
 	hours = 0
 	for variable in (var for var in value_map if value_map[var] is not None):
-		hours += variable.data['credits']
+		hours += float(variable.data['credits'])
 		if hours > min_hours:
 			return True
 	return False
@@ -119,7 +127,7 @@ def day_start_constraint(variables, value_map, extras):
 Creates unary constraints for setting a latest class time. Preferrable to use this instead of creating constraints.
 """
 def create_day_end_constraints(end_time, variables):
-	return [Constraint([variable], day_start_constraint, day_end=end_time) for variable in variables]
+	return [Constraint([variable], day_end_constraint, day_end=end_time) for variable in variables]
 
 """
 Sets a latest time for classes in the evening.

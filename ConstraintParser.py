@@ -25,18 +25,20 @@ def create_schedule(classes_considered, parameters, class_variables = None):
 	if class_variables is None:
 		# Define variables through web
 		for class_name in (name.split(' ') for name in classes_considered):
-			class_info = json.load(urllib2.urlopen('course.us.to/%s/%s.json' % (class_name[0], class_name[1])))
+			print 'Getting class data for %s %s' % (class_name[0], class_name[1])
+			class_info = json.load(urllib2.urlopen('http://course.us.to/school/%s/%s.json' % (class_name[0], class_name[1])))
 			# Doesn't store school properly in json, fix
 			class_info['school'] = class_name[0]
-			sections = set([])
+			sections = []
 			for section_name in (section['name'] for section in class_info['sections']):
-				sections.add(json.load(urllib2.urlopen('course.us.to/%s/%s/%s.json' % (class_name[0], class_name[1], section_name))))
+				sections.append(json.load(urllib2.urlopen('http://course.us.to/school/%s/%s/%s.json' % (class_name[0], class_name[1], section_name))))
 			sections.append(None)
 			variables.append(Variable(class_info, sections))
 	else:
 		# Use for testing
 		variables = class_variables
 
+	print 'Creating constraint list'
 	constraints = []
 	for ptype in parameters:
 		if ptype == 'max_hours':
@@ -55,12 +57,13 @@ def create_schedule(classes_considered, parameters, class_variables = None):
 	for constraint in create_no_overlap_constraints(variables):
 		constraints.append(constraint)
 
+	print 'Solving constraint satisfaction problem'
 	problem = ConstraintSatisfactionProblem(variables, constraints)
 	return problem.solve()
 
 def create_class_needed_constraints(variables, classes_needed):
 	constraints = []
 	for class_name in classes_needed:
-		for variable in (var for var in variables if str(var.school) + ' ' + str(var.number) == class_name):
-			constraints.append(Constraint(variable, needed_class_constraint))
+		for variable in (var for var in variables if str(var.data['school']) + ' ' + str(var.data['name']) == class_name):
+			constraints.append(Constraint([variable], needed_class_constraint))
 	return constraints

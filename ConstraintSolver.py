@@ -132,7 +132,7 @@ class ConstraintSatisfactionProblem:
 	def remove_inferences(self, inferences):
 		if inferences is not None:
 			for inference in inferences:
-				inference["variable"].domain.add(inference["removed_value"])
+				inference["variable"].domain.append(inference["removed_value"])
 		# TODO consider the conflcit set (inference has "conflict_source" key)
 
 	def backtracking_search(self):
@@ -216,7 +216,7 @@ class ConstraintSatisfactionProblem:
 					if len(new_arc.variables) == 2:
 						queue.append((next[0], new_arc))
 
-		return True
+		return inferences
 
 	def remove_inconsistent_values(self, constraint, start):
 		inferences = []

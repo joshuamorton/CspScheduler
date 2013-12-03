@@ -1,6 +1,3 @@
-# TODO throw exceptions if wrong number of variables (in Schedulingconstraints.py)
-# TODO throw exception if course required but not in courses requested?
-
 from ConstraintSolver import *
 from SchedulingConstraints import *
 import urllib2

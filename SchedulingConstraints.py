@@ -96,7 +96,7 @@ def min_hours_constraint(variables, value_map, extras):
 	hours = 0
 	for variable in (var for var in value_map if value_map[var] is not None):
 		hours += float(variable.data['credits'])
-		if hours > min_hours:
+		if hours >= min_hours:
 			return True
 	return False
 
